@@ -1,0 +1,3 @@
+python-evtx
+pandas
+obfuscation-detection
