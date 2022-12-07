@@ -51,4 +51,6 @@ These are some python modules that should be installed:
     ```
 
 You can simply install all the modules by using the command below (requirements.txt is needed).
-```pip install -r requirements.txt
+```sh
+pip install -r requirements.txt
+```
