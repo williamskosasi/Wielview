@@ -49,3 +49,6 @@ These are some python modules that should be installed:
     ```sh
     pip install obfuscation-detection
     ```
+
+You can simply install all the modules by using the command below (requirements.txt is needed).
+```pip install -r requirements.txt
