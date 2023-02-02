@@ -659,6 +659,9 @@ def storage(pathPartitionDiagnostic, pathStorageStorportHealth, pathStorsvcDiagn
                                 serialNum = serialNumList
                             mbrValue = ""
                             fileSystemId = []
+                            bootableFlag = []
+                            partitionsSize = []
+                            startingSectorStorages = []
                             for record in log.records():
                                 data = record.xml()
                                 serialNumTemp = re.search('<Data Name="SerialNumber">(.*)</Data>', data).group(1).split()
@@ -675,6 +678,14 @@ def storage(pathPartitionDiagnostic, pathStorageStorportHealth, pathStorsvcDiagn
                                         try:
                                             vbr0Bytes = re.search('<Data Name="Vbr0Bytes">(.*)</Data>', data).group(1)
                                             if(vbr0Bytes != "0"):
+                                                if(hexMbrText[892:894] == b"80"):
+                                                    bootableFlag.append("True")
+                                                else:
+                                                    bootableFlag.append("False")
+                                                startingSector = int(b'0x'+hexMbrText[914:916]+hexMbrText[912:914]+hexMbrText[910:912]+hexMbrText[908:910], base=16)
+                                                startingSectorStorages.append(startingSector)
+                                                sizeOfPartition = int(b'0x'+hexMbrText[922:924]+hexMbrText[920:922]+hexMbrText[918:920]+hexMbrText[916:918], base=16)*int(tableStorage["Bytes Per Sector"][option-1])
+                                                partitionsSize.append(sizeOfPartition)
                                                 if(hexMbrText[900:902] == b"07" and base64.b64decode(re.search('<Data Name="Vbr0">(.*)</Data>', data).group(1))[3:7] != b"NTFS"):
                                                     fileSystemId.append("exFAT")
                                                 else:
@@ -684,6 +695,14 @@ def storage(pathPartitionDiagnostic, pathStorageStorportHealth, pathStorsvcDiagn
                                         try:
                                             vbr1Bytes = re.search('<Data Name="Vbr1Bytes">(.*)</Data>', data).group(1)
                                             if(vbr1Bytes != "0"):
+                                                if(hexMbrText[924:926] == b"80"):
+                                                    bootableFlag.append("True")
+                                                else:
+                                                    bootableFlag.append("False")
+                                                startingSector = int(b'0x'+hexMbrText[946:948]+hexMbrText[944:946]+hexMbrText[942:944]+hexMbrText[940:942], base=16)
+                                                startingSectorStorages.append(startingSector)
+                                                sizeOfPartition = int(b'0x'+hexMbrText[954:956]+hexMbrText[952:954]+hexMbrText[950:952]+hexMbrText[948:950], base=16)*int(tableStorage["Bytes Per Sector"][option-1])
+                                                partitionsSize.append(sizeOfPartition)
                                                 if(hexMbrText[932:934] == b"07" and base64.b64decode(re.search('<Data Name="Vbr1">(.*)</Data>', data).group(1))[3:7] != b"NTFS"):
                                                     fileSystemId.append("exFAT")
                                                 else:
@@ -693,6 +712,14 @@ def storage(pathPartitionDiagnostic, pathStorageStorportHealth, pathStorsvcDiagn
                                         try:
                                             vbr2Bytes = re.search('<Data Name="Vbr2Bytes">(.*)</Data>', data).group(1)
                                             if(vbr2Bytes != "0"):
+                                                if(hexMbrText[956:958] == b"80"):
+                                                    bootableFlag.append("True")
+                                                else:
+                                                    bootableFlag.append("False")
+                                                startingSector = int(b'0x'+hexMbrText[978:980]+hexMbrText[976:978]+hexMbrText[974:976]+hexMbrText[972:974], base=16)
+                                                startingSectorStorages.append(startingSector)
+                                                sizeOfPartition = int(b'0x'+hexMbrText[986:988]+hexMbrText[984:986]+hexMbrText[982:984]+hexMbrText[980:982], base=16)*int(tableStorage["Bytes Per Sector"][option-1])
+                                                partitionsSize.append(sizeOfPartition)
                                                 if(hexMbrText[964:966] == b"07" and base64.b64decode(re.search('<Data Name="Vbr2">(.*)</Data>', data).group(1))[3:7] != b"NTFS"):
                                                     fileSystemId.append("exFAT")
                                                 else:
@@ -702,6 +729,14 @@ def storage(pathPartitionDiagnostic, pathStorageStorportHealth, pathStorsvcDiagn
                                         try:
                                             vbr3Bytes = re.search('<Data Name="Vbr3Size">(.*)</Data>', data).group(1)
                                             if(vbr3Bytes != "0"):
+                                                if(hexMbrText[988:990] == b"80"):
+                                                    bootableFlag.append("True")
+                                                else:
+                                                    bootableFlag.append("False")
+                                                startingSector = int(b'0x'+hexMbrText[1010:1012]+hexMbrText[1008:1010]+hexMbrText[1006:1008]+hexMbrText[1004:1006], base=16)
+                                                startingSectorStorages.append(startingSector)
+                                                sizeOfPartition = int(b'0x'+hexMbrText[1018:1020]+hexMbrText[1016:1018]+hexMbrText[1014:1016]+hexMbrText[1012:1014], base=16)*int(tableStorage["Bytes Per Sector"][option-1])
+                                                partitionsSize.append(sizeOfPartition)
                                                 if(hexMbrText[996:998] == b"07" and base64.b64decode(re.search('<Data Name="Vbr3">(.*)</Data>', data).group(1))[3:7] != b"NTFS"):
                                                     fileSystemId.append("exFAT")
                                                 else:
@@ -713,11 +748,22 @@ def storage(pathPartitionDiagnostic, pathStorageStorportHealth, pathStorsvcDiagn
                                         if(mbrValue != mbrValueTemp):
                                             mbrValue = mbrValueTemp
                                             fileSystemId.clear()
+                                            startingSectorStorages.clear()
+                                            partitionsSize.clear()
+                                            bootableFlag.clear()
                                             decodedMbrText = base64.b64decode(mbrValue)
                                             hexMbrText = base64.b16encode(decodedMbrText)
                                             try:
                                                 vbr0Bytes = re.search('<Data Name="Vbr0Bytes">(.*)</Data>', data).group(1)
                                                 if(vbr0Bytes != "0"):
+                                                    if(hexMbrText[892:894] == b"80"):
+                                                        bootableFlag.append("True")
+                                                    else:
+                                                        bootableFlag.append("False")
+                                                    startingSector = int(b'0x'+hexMbrText[914:916]+hexMbrText[912:914]+hexMbrText[910:912]+hexMbrText[908:910], base=16)
+                                                    startingSectorStorages.append(startingSector)
+                                                    sizeOfPartition = int(b'0x'+hexMbrText[922:924]+hexMbrText[920:922]+hexMbrText[918:920]+hexMbrText[916:918], base=16)*int(tableStorage["Bytes Per Sector"][option-1])
+                                                    partitionsSize.append(sizeOfPartition)
                                                     if(hexMbrText[900:902] == b"07" and base64.b64decode(re.search('<Data Name="Vbr0">(.*)</Data>', data).group(1))[3:7] != b"NTFS"):
                                                         fileSystemId.append("exFAT")
                                                     else:
@@ -727,6 +773,14 @@ def storage(pathPartitionDiagnostic, pathStorageStorportHealth, pathStorsvcDiagn
                                             try:
                                                 vbr1Bytes = re.search('<Data Name="Vbr1Bytes">(.*)</Data>', data).group(1)
                                                 if(vbr1Bytes != "0"):
+                                                    if(hexMbrText[924:926] == b"80"):
+                                                        bootableFlag.append("True")
+                                                    else:
+                                                        bootableFlag.append("False")
+                                                    startingSector = int(b'0x'+hexMbrText[946:948]+hexMbrText[944:946]+hexMbrText[942:944]+hexMbrText[940:942], base=16)
+                                                    startingSectorStorages.append(startingSector)
+                                                    sizeOfPartition = int(b'0x'+hexMbrText[954:956]+hexMbrText[952:954]+hexMbrText[950:952]+hexMbrText[948:950], base=16)*int(tableStorage["Bytes Per Sector"][option-1])
+                                                    partitionsSize.append(sizeOfPartition)
                                                     if(hexMbrText[932:934] == b"07" and base64.b64decode(re.search('<Data Name="Vbr1">(.*)</Data>', data).group(1))[3:7] != b"NTFS"):
                                                         fileSystemId.append("exFAT")
                                                     else:
@@ -736,6 +790,14 @@ def storage(pathPartitionDiagnostic, pathStorageStorportHealth, pathStorsvcDiagn
                                             try:
                                                 vbr2Bytes = re.search('<Data Name="Vbr2Bytes">(.*)</Data>', data).group(1)
                                                 if(vbr2Bytes != "0"):
+                                                    if(hexMbrText[956:958] == b"80"):
+                                                        bootableFlag.append("True")
+                                                    else:
+                                                        bootableFlag.append("False")
+                                                    startingSector = int(b'0x'+hexMbrText[978:980]+hexMbrText[976:978]+hexMbrText[974:976]+hexMbrText[972:974], base=16)
+                                                    startingSectorStorages.append(startingSector)
+                                                    sizeOfPartition = int(b'0x'+hexMbrText[986:988]+hexMbrText[984:986]+hexMbrText[982:984]+hexMbrText[980:982], base=16)*int(tableStorage["Bytes Per Sector"][option-1])
+                                                    partitionsSize.append(sizeOfPartition)
                                                     if(hexMbrText[964:966] == b"07" and base64.b64decode(re.search('<Data Name="Vbr2">(.*)</Data>', data).group(1))[3:7] != b"NTFS"):
                                                         fileSystemId.append("exFAT")
                                                     else:
@@ -745,6 +807,14 @@ def storage(pathPartitionDiagnostic, pathStorageStorportHealth, pathStorsvcDiagn
                                             try:
                                                 vbr3Bytes = re.search('<Data Name="Vbr3Size">(.*)</Data>', data).group(1)
                                                 if(vbr3Bytes != "0"):
+                                                    if(hexMbrText[988:990] == b"80"):
+                                                        bootableFlag.append("True")
+                                                    else:
+                                                        bootableFlag.append("False")
+                                                    startingSector = int(b'0x'+hexMbrText[1010:1012]+hexMbrText[1008:1010]+hexMbrText[1006:1008]+hexMbrText[1004:1006], base=16)
+                                                    startingSectorStorages.append(startingSector)
+                                                    sizeOfPartition = int(b'0x'+hexMbrText[1018:1020]+hexMbrText[1016:1018]+hexMbrText[1014:1016]+hexMbrText[1012:1014], base=16)*int(tableStorage["Bytes Per Sector"][option-1])
+                                                    partitionsSize.append(sizeOfPartition)
                                                     if(hexMbrText[996:998] == b"07" and base64.b64decode(re.search('<Data Name="Vbr3">(.*)</Data>', data).group(1))[3:7] != b"NTFS"):
                                                         fileSystemId.append("exFAT")
                                                     else:
@@ -752,7 +822,14 @@ def storage(pathPartitionDiagnostic, pathStorageStorportHealth, pathStorsvcDiagn
                                             except:
                                                 pass
                             
+                            tablePartition = {"No":[], "Partition":[], "Bootable Flag":[], "File System":[], "Starting Sectors":[], "Size (bytes)":[]}
                             partitionCounter = 0
+                            for eachBootableFlag in bootableFlag:
+                                tablePartition["Bootable Flag"].append(eachBootableFlag)
+                            for partitionSize in partitionsSize:
+                                tablePartition["Size (bytes)"].append(partitionSize)
+                            for startingSectorStorage in startingSectorStorages:
+                                tablePartition["Starting Sectors"].append(startingSectorStorage)
                             for fileSystem in fileSystemId:
                                 partitionCounter += 1
                                 tablePartition["Partition"].append(partitionCounter)
